@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guardkit"
+version = "0.1.0"
+description = "Offline, deterministic guardrails for LLM apps: PII (incl. Aadhaar/PAN), secrets, prompt-injection rules, policy YAML, CLI"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Ashish Dhillon" }]
+dependencies = ["PyYAML>=6"]
+keywords = ["llm", "guardrails", "pii", "prompt-injection", "security"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+guardkit = "guardkit.cli:main"
+
+[tool.setuptools]
+packages = ["guardkit"]

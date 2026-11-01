@@ -1,0 +1,7 @@
+input:
+  - {guard: injection, action: block}
+  - {guard: pii, action: redact, types: [email, phone, card, aadhaar, pan]}
+output:
+  - {guard: secrets, action: redact}
+  - {guard: pii, action: redact}
+  - {guard: topics, action: block, banned: [internal-only, confidential]}
