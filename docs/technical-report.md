@@ -1,7 +1,7 @@
 # Author-Written Test Sets Overstate Lightweight Prompt-Injection Detectors: A Case Study with an Offline Guardrail Toolkit
 
 Ashish Dhillon, [Affiliation], dhillon.ashish15@gmail.com
-Draft, 1 November 2026. Code: github.com/ashishdhillon/guardkit (MIT). Package: `pip install guardkit`.
+Draft, 1 November 2026. Latest version (with benchmark baselines and confidence intervals): `docs/paper/main.pdf` (LaTeX source `docs/paper/main.tex`). Code: github.com/ashishdhillon/guardkit (MIT). Package: `pip install guardkit`.
 
 ## Abstract
 
