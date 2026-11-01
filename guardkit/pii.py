@@ -58,7 +58,18 @@ _AADHAAR = re.compile(r"(?<!\d)[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}(?!\d)")
 _PAN = re.compile(r"(?<![A-Za-z0-9])[A-Z]{3}[ABCFGHLJPT][A-Z]\d{4}[A-Z](?![A-Za-z0-9])")
 _IPV4 = re.compile(r"(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\d.])")
 
-ALL_TYPES = ("email", "phone", "card", "aadhaar", "pan", "ipv4")
+_SSN = re.compile(r"(?<!\d)(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?!\d)")
+_PIN = re.compile(r"(?i)\b(?:pin(?:\s?code)?|postal code|zip)\b\W{0,3}([1-9]\d{5})(?!\d)")
+# cue-based heuristics (opt-in; noisy by nature)
+_TITLE = r"(?:Mr|Mrs|Ms|Miss|Dr|Prof|Shri|Smt|Sri|Mx)\.?"
+_NAME = re.compile(rf"\b{_TITLE}\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+){{0,2}}")
+_NAME_CUE = re.compile(r"(?i:\b(?:my name is|i am called|name:|this is))\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})")
+_ADDRESS = re.compile(
+    r"(?i)\b(?:flat|house|plot|door)\s*(?:no\.?|number|#)?\s*[\w/-]+,?\s+[\w .,'/-]{3,60}?"
+    r"\b(?:road|rd|street|st|lane|nagar|colony|sector|marg|avenue|ave|block|society|apartments?)\b[\w ,.-]{0,40}")
+
+ALL_TYPES = ("email", "phone", "card", "aadhaar", "pan", "ipv4", "ssn", "pincode")
+OPT_IN_TYPES = ("name", "address")      # heuristic, off by default
 
 
 class PIIGuard(Guard):
@@ -66,7 +77,7 @@ class PIIGuard(Guard):
 
     def __init__(self, types: Iterable[str] = ALL_TYPES):
         self.types = tuple(types)
-        unknown = set(self.types) - set(ALL_TYPES)
+        unknown = set(self.types) - set(ALL_TYPES) - set(OPT_IN_TYPES)
         if unknown:
             raise ValueError(f"unknown PII types: {sorted(unknown)}")
 
@@ -96,4 +107,18 @@ class PIIGuard(Guard):
         if "ipv4" in self.types:
             for m in _IPV4.finditer(text):
                 add("ipv4", m)
+        if "ssn" in self.types:
+            for m in _SSN.finditer(text):
+                add("ssn", m)
+        if "pincode" in self.types:
+            for m in _PIN.finditer(text):
+                out.append(Finding("pii", "pincode", m.start(1), m.end(1), m.group(1)))
+        if "name" in self.types:
+            for m in _NAME.finditer(text):
+                add("name", m)
+            for m in _NAME_CUE.finditer(text):
+                out.append(Finding("pii", "name", m.start(1), m.end(1), m.group(1)))
+        if "address" in self.types:
+            for m in _ADDRESS.finditer(text):
+                add("address", m)
         return out

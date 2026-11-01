@@ -5,9 +5,9 @@ dependency (PyYAML). Put it before the model (input) and after it (output).
 
 | Guard | What it does |
 |---|---|
-| `pii` | Email, phone (India + international), payment cards (**Luhn**-checked), **Aadhaar** (**Verhoeff**-checked), **PAN**, IPv4 |
+| `pii` | Email, phone (India + international), payment cards (**Luhn**-checked), **Aadhaar** (**Verhoeff**-checked), **PAN**, IPv4, US SSN, PIN code (cue-based). Opt-in heuristics: `name`, `address` |
 | `secrets` | AWS / GitHub / Slack / Google / Stripe keys, JWTs, private-key headers, high-entropy `api_key=...` assignments |
-| `injection` | Rule-based prompt-injection and jailbreak detection, with Unicode normalisation (zero-width and full-width tricks) |
+| `injection` | Prompt-injection / jailbreak detection: regex rules + a small trained classifier (pure Python, no ML dependency), with Unicode normalisation |
 | `topics` | Block or flag banned keywords |
 | `json` | Require valid JSON with required keys and basic types |
 
@@ -16,7 +16,8 @@ Each guard's action is `block`, `redact` (replaced with `[REDACTED:RULE]`) or `w
 ## Install
 
 ```bash
-pip install -e .          # from a clone of this repo
+pip install guardkit            # once published to PyPI
+pip install -e .                # or from a clone of this repo
 ```
 
 ## Use
@@ -53,21 +54,53 @@ echo "my PAN is ABCPD1234E" | guardkit scan --policy examples/policy.yaml
 guardkit serve --policy examples/policy.yaml --port 8080   # POST /check {"text": "...", "stage": "input"}
 ```
 
+## Injection detection: measured results
+
+`InjectionGuard(mode="rules" | "model" | "both")` (default `both`: either fires).
+
+Measured with `python scripts/evaluate.py` on hand-written, labelled examples
+(`eval/`). Both sets were written by the author, so treat them as indicative, not as a
+benchmark of real-world traffic.
+
+| Set | Mode | Precision | Recall | F1 |
+|---|---|---|---|---|
+| **Held-out test** (102 examples, not used for tuning) | rules only | 1.00 | 0.02 | 0.04 |
+| | classifier only | 0.94 | 0.67 | 0.78 |
+| | both (default) | 0.94 | 0.67 | 0.78 |
+| Dev set (149 examples, used while building; optimistic) | rules only | 1.00 | 0.24 | 0.39 |
+| | both (default) | 1.00 | 0.85 | 0.92 |
+
+How to read this: the regex rules almost never fire falsely but miss most paraphrased
+attacks. The classifier catches about two thirds of unseen phrasings in the held-out set
+at roughly 6% false alarms among flagged items, and it was trained on synthetic data
+(`scripts/make_train_data.py`), not on real attacks. Expect lower recall on real,
+adversarial traffic. Use it as one cheap layer, not as your only defence. Retrain with your
+own labelled data via `scripts/train_injection.py`.
+
 ## Honest limitations
 
-- Injection detection is **rule-based**. It catches common phrasings and simple obfuscation,
-  not paraphrases it has no rule for, and it is not a substitute for a trained classifier or
-  for least-privilege design. Treat it as one cheap layer.
-- PII patterns favour precision (checksums for cards and Aadhaar). Phone, name and address
-  detection is incomplete, and names/addresses are not detected at all.
+- Injection detection is statistical plus rules; a determined attacker can paraphrase around
+  it. It is not a substitute for least-privilege design (limit what tools and data the model
+  can reach).
+- Name and address detection are cue-based heuristics (titles, "my name is", flat/street
+  patterns), opt-in, and will miss and mis-flag. Phone and PIN code patterns favour India.
+- The classifier was trained on synthetic data and evaluated on author-written examples.
 - The bundled HTTP service has no authentication or TLS. Run it behind your own gateway.
-- Not yet benchmarked against real-world corpora. The test suite uses hand-written positive
-  and negative examples (`tests/`).
 
 ## Develop
 
 ```bash
 pip install -e ".[dev]" && pytest
+python scripts/evaluate.py        # injection precision / recall
+python -m build && twine check dist/*
 ```
+
+## Releasing to PyPI (maintainer)
+
+The workflow in `.github/workflows/publish.yml` uses PyPI trusted publishing (no token in
+GitHub). One-time setup on pypi.org: *Account settings -> Publishing -> Add a pending
+publisher* with project `guardkit`, owner `ashishdhillon`, repo `guardkit`, workflow
+`publish.yml`, environment `pypi`. Then create a GitHub Release; the workflow tests, builds
+and uploads.
 
 MIT licensed.

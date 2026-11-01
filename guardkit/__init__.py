@@ -7,6 +7,6 @@ from .secrets import SecretsGuard
 from .injection import InjectionGuard
 from .content import TopicGuard, JSONGuard
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["Finding", "Guard", "Result", "Pipeline", "Stage", "from_dict", "load",
            "PIIGuard", "SecretsGuard", "InjectionGuard", "TopicGuard", "JSONGuard"]

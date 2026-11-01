@@ -34,14 +34,27 @@ def normalise(text: str) -> str:
 class InjectionGuard(Guard):
     name = "injection"
 
-    def __init__(self, threshold: float = 0.8):
-        self.threshold = threshold
+    def __init__(self, threshold: float = 0.8, mode: str = "both", model_threshold: float = 0.5):
+        """mode: 'rules' (regex rules only), 'model' (trained classifier only) or 'both' (either fires)."""
+        if mode not in ("rules", "model", "both"):
+            raise ValueError("mode must be rules, model or both")
+        self.threshold, self.mode, self.model_threshold = threshold, mode, model_threshold
+        self._model = None
+        if mode != "rules":
+            from .classifier import LogReg
+            self._model = LogReg.load()
 
     def scan(self, text: str) -> List[Finding]:
+        out: List[Finding] = []
+        if self._model is not None:
+            sc = self._model.score(text)
+            if sc >= self.model_threshold:
+                out.append(Finding("injection", "classifier", 0, len(text), text, score=round(sc, 3)))
+            if self.mode == "model":
+                return out
         norm = normalise(text)
         # normalisation can change length (NFKC); only keep spans when lengths match
         same_len = len(norm) == len(text)
-        out: List[Finding] = []
         for name, rx, weight in _COMPILED:
             m = rx.search(norm)
             if m and weight >= self.threshold:

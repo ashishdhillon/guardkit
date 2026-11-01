@@ -53,7 +53,26 @@ def test_ipv4():
 def test_type_filter_and_unknown_type():
     assert rules("a@b.com 9876543210", types=["email"]) == ["email"]
     try:
-        PIIGuard(types=["ssn"])
+        PIIGuard(types=["passport"])
         assert False
     except ValueError:
         pass
+
+
+def test_ssn_and_pincode():
+    assert rules("ssn 123-45-6789") == ["ssn"]
+    assert rules("ssn 000-12-3456") == []
+    assert rules("ssn 666-12-3456") == []
+    assert rules("PIN code 110001") == ["pincode"]
+    assert rules("pincode: 560034") == ["pincode"]
+    assert rules("order 110001") == []          # no cue word, not flagged
+
+
+def test_opt_in_name_and_address():
+    assert rules("Dr. Anita Sharma attended", types=["name"]) == ["name"]
+    assert rules("my name is Ravi Kumar", types=["name"]) == ["name"]
+    assert rules("Flat 12B, Gandhi Nagar, Delhi", types=["address"]) == ["address"]
+    assert rules("The dr. said hi", types=["name"]) == []
+    assert rules("Dr. Anita Sharma, Flat 12B, Gandhi Nagar") == []   # not on by default
+    r = PIIGuard(types=["name"]).scan("Thanks Mr. Rao")
+    assert [f.text for f in r] == ["Mr. Rao"]
