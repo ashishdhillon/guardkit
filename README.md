@@ -77,6 +77,30 @@ at roughly 6% false alarms among flagged items, and it was trained on synthetic 
 adversarial traffic. Use it as one cheap layer, not as your only defence. Retrain with your
 own labelled data via `scripts/train_injection.py`.
 
+## External evaluation (in-the-wild jailbreaks)
+
+The author-written sets above flatter the detector. On the public in-the-wild jailbreak
+dataset (Shen et al., CCS 2024; 1,405 jailbreak and 13,735 regular prompts) results are much
+weaker. `InjectionGuard(model="jailbreak")` is a second classifier trained on the earlier
+~65% of that data (temporal split, near-duplicates removed) and tested on the later part
+(5,497 prompts, 398 jailbreaks):
+
+| Detector | Recall | False-positive rate | Precision (7% prevalence) |
+|---|---|---|---|
+| regex rules | 0.05 | 0.026 | 0.13 |
+| jailbreak classifier, threshold 0.5 | 0.42 | 0.126 | 0.21 |
+| jailbreak classifier, threshold at 1% FPR on training negatives | 0.20 | 0.033 | 0.33 |
+
+Classifier AUC is 0.74. The default `model="injection"` classifier (synthetic training) is
+weaker still on this data (recall 0.31, FPR 0.12 zero-shot). Do not rely on guardkit's
+injection detection as a primary defence for user prompts. A full write-up is in
+`docs/technical-report.md`. Reproduce with `scripts/train_jailbreak.py` and
+`scripts/eval_external.py` (download the two CSVs from github.com/verazuo/jailbreak_llms).
+
+PII checksums: random 12-digit strings pass Verhoeff 9.9% of the time and random 16-digit strings
+pass Luhn 10.0% of the time, so checksum validation removes about 90% of numeric false
+positives. On 15,140 real prompts, 166 card-shaped digit strings shrank to 9 after Luhn.
+
 ## Honest limitations
 
 - Injection detection is statistical plus rules; a determined attacker can paraphrase around

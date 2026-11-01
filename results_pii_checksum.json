@@ -1,0 +1,13 @@
+{
+ "random 12-digit strings passing Verhoeff (Aadhaar)": 0.0991,
+ "random 16-digit strings passing Luhn (card)": 0.1001,
+ "generated valid Aadhaar kept": 1.0,
+ "real prompts (n=15140): 12-digit regex matches / after Verhoeff": [
+  4,
+  1
+ ],
+ "real prompts: 13-19-digit regex matches / after Luhn": [
+  166,
+  9
+ ]
+}

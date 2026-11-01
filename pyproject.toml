@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "guardkit"
-version = "0.2.0"
+version = "0.3.0"
 description = "Offline guardrails for LLM apps: PII (incl. Aadhaar/PAN), secrets, prompt-injection classifier + rules, policy YAML, CLI"
 readme = "README.md"
 requires-python = ">=3.9"

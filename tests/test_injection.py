@@ -48,3 +48,9 @@ def test_modes_validated():
     import pytest
     with pytest.raises(ValueError):
         InjectionGuard(mode="magic")
+
+
+def test_jailbreak_model_loads_and_is_separate():
+    g = InjectionGuard(mode="model", model="jailbreak")
+    assert g._model.w and g._model is not InjectionGuard(mode="model")._model
+    assert 0.0 <= g._model.score("Hello, can you help me write an email?") <= 1.0

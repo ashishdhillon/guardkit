@@ -9,11 +9,12 @@ import zlib
 from .injection import normalise
 
 DIM = 1 << 16
+MAX_CHARS = 4000
 _TOK = re.compile(r"[^\W_]+(?:'[a-z]+)?", re.U)
 
 
 def featurize(text: str):
-    toks = _TOK.findall(normalise(text))
+    toks = _TOK.findall(normalise(text[:MAX_CHARS]))
     feats = {}
     grams = toks + [a + " " + b for a, b in zip(toks, toks[1:])]
     for g in grams:
@@ -37,8 +38,8 @@ class LogReg:
             json.dump({"dim": DIM, "b": self.b, "w": {str(k): round(v, 5) for k, v in self.w.items() if abs(v) > 1e-4}}, fh)
 
     @classmethod
-    def load(cls, path=None):
-        path = path or os.path.join(os.path.dirname(__file__), "data", "injection_lr.json")
+    def load(cls, path=None, name="injection"):
+        path = path or os.path.join(os.path.dirname(__file__), "data", f"{name}_lr.json")
         with open(path) as fh:
             d = json.load(fh)
         assert d["dim"] == DIM

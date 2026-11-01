@@ -34,15 +34,17 @@ def normalise(text: str) -> str:
 class InjectionGuard(Guard):
     name = "injection"
 
-    def __init__(self, threshold: float = 0.8, mode: str = "both", model_threshold: float = 0.5):
-        """mode: 'rules' (regex rules only), 'model' (trained classifier only) or 'both' (either fires)."""
+    def __init__(self, threshold: float = 0.8, mode: str = "both", model_threshold: float = 0.5, model: str = "injection"):
+        """model: "injection" (document / RAG-chunk phrasing, synthetic training) or "jailbreak"
+        (user prompts, trained on public in-the-wild data).
+        mode: 'rules' (regex rules only), 'model' (trained classifier only) or 'both' (either fires)."""
         if mode not in ("rules", "model", "both"):
             raise ValueError("mode must be rules, model or both")
         self.threshold, self.mode, self.model_threshold = threshold, mode, model_threshold
         self._model = None
         if mode != "rules":
             from .classifier import LogReg
-            self._model = LogReg.load()
+            self._model = LogReg.load(name=model)
 
     def scan(self, text: str) -> List[Finding]:
         out: List[Finding] = []

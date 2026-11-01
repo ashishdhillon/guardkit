@@ -1,0 +1,26 @@
+{
+ "rules": {
+  "recall": 0.134,
+  "fpr": 0.0744,
+  "precision_at_this_mix": 0.155,
+  "tp": 188,
+  "fp": 1022,
+  "ms_per_prompt": 0.46
+ },
+ "model": {
+  "recall": 0.311,
+  "fpr": 0.123,
+  "precision_at_this_mix": 0.206,
+  "tp": 437,
+  "fp": 1689,
+  "ms_per_prompt": 0.64
+ },
+ "both": {
+  "recall": 0.394,
+  "fpr": 0.1822,
+  "precision_at_this_mix": 0.181,
+  "tp": 553,
+  "fp": 2502,
+  "ms_per_prompt": 1.18
+ }
+}

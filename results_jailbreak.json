@@ -1,0 +1,30 @@
+{
+ "split": {
+  "cut": "2023-07-04",
+  "train": 8038,
+  "test": 5497,
+  "test_jb": 398
+ },
+ "classifier @0.5": {
+  "recall": 0.42,
+  "fpr": 0.1263,
+  "precision": 0.206,
+  "tp": 167,
+  "fp": 644
+ },
+ "classifier @1% train-FPR": {
+  "recall": 0.204,
+  "fpr": 0.0328,
+  "precision": 0.327,
+  "tp": 81,
+  "fp": 167
+ },
+ "regex rules": {
+  "recall": 0.048,
+  "fpr": 0.0259,
+  "precision": 0.126,
+  "tp": 19,
+  "fp": 132
+ },
+ "classifier AUC": 0.739
+}
