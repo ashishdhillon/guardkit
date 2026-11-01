@@ -111,6 +111,13 @@ positives. On 15,140 real prompts, 166 card-shaped digit strings shrank to 9 aft
 - The classifier was trained on synthetic data and evaluated on author-written examples.
 - The bundled HTTP service has no authentication or TLS. Run it behind your own gateway.
 
+## Related projects
+
+- [injection-bench](https://github.com/ashishdhillon/injection-bench): leakage-controlled benchmark that scored this
+  detector (`guardkit:rules`, `guardkit:model`) against baselines on real data.
+- [bharatid](https://github.com/ashishdhillon/bharatid): deeper Indian-ID validators (GSTIN, TAN, vehicle plates and more)
+  than the PII guard here.
+
 ## Develop
 
 ```bash
