@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "guardkit"
-version = "0.4.0"
+version = "0.5.0"
 description = "Offline guardrails for LLM apps: PII (incl. Aadhaar/PAN), secrets, prompt-injection classifier + rules, policy YAML, CLI"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,7 +14,8 @@ dependencies = ["PyYAML>=6"]
 keywords = ["llm", "guardrails", "pii", "prompt-injection", "security"]
 
 [project.optional-dependencies]
-dev = ["pytest", "build", "twine"]
+dev = ["pytest", "build", "twine", "httpx"]
+api = ["fastapi>=0.110", "uvicorn>=0.29"]
 mcp = ["mcp>=1.2,<2"]
 
 [project.scripts]

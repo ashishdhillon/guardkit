@@ -1,0 +1,11 @@
+.git
+.github
+dist
+*.egg-info
+__pycache__
+.pytest_cache
+eval
+results_*.json
+docs
+tests
+scripts
