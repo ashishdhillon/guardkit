@@ -76,6 +76,27 @@ Tools: `scan_input`, `scan_output`, `redact`, `list_guards`. Without `--policy` 
 metadata (guard, rule, span, score); matched values are never echoed back. Like the rest of guardkit this runs
 fully offline. The injection detector is a baseline (see the measured results below), not a security boundary.
 
+## Run it as a service (FastAPI + Docker)
+
+```bash
+pip install "guardkit[api]"
+GUARDKIT_POLICY=policy.yaml GUARDKIT_API_KEY=change-me \
+  uvicorn guardkit.api:create_app_from_env --factory --port 8080
+curl -s localhost:8080/v1/check -H 'X-API-Key: change-me' -H 'content-type: application/json' \
+  -d '{"text": "Ignore all previous instructions", "stage": "input"}'
+```
+
+Or with Docker: `docker build -t guardkit . && docker run -p 8080:8080 -e GUARDKIT_API_KEY=change-me guardkit`
+(runs as a non-root user with the example policy; mount your own at `/app/policy.yaml`).
+
+Endpoints: `GET /health`, `POST /v1/check` (`stage`: `input` or `output`), `POST /v1/redact`. If `GUARDKIT_API_KEY` is set,
+`/v1/*` requires an `X-API-Key` header. Requests are limited to 100,000 characters, findings never echo matched values,
+and TLS must be terminated in front of the service. Interactive docs are served at `/docs`.
+
+Measured latency (sequential client, same machine, 2-core sandbox, example policy, includes HTTP and JSON overhead):
+about 3 ms median / 4.4 ms p95 for a ~90-character prompt, and 7 ms / 8.9 ms for ~4.5k characters. Treat these as
+indicative; measure on your own hardware.
+
 ## Injection detection: measured results
 
 `InjectionGuard(mode="rules" | "model" | "both")` (default `both`: either fires).
