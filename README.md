@@ -54,6 +54,28 @@ echo "my PAN is ABCPD1234E" | guardkit scan --policy examples/policy.yaml
 guardkit serve --policy examples/policy.yaml --port 8080   # POST /check {"text": "...", "stage": "input"}
 ```
 
+## Use it from an AI assistant (MCP server)
+
+guardkit ships a [Model Context Protocol](https://modelcontextprotocol.io) server, so assistants such as
+Claude Desktop, Claude Code and Cursor can call the guardrails directly (check a prompt or a retrieved
+document before using it, redact before sending text onward).
+
+```bash
+pip install "guardkit[mcp]"
+claude mcp add guardkit -- guardkit-mcp --policy policy.yaml     # Claude Code
+```
+
+Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{"mcpServers": {"guardkit": {"command": "guardkit-mcp", "args": ["--policy", "/path/to/policy.yaml"]}}}
+```
+
+Tools: `scan_input`, `scan_output`, `redact`, `list_guards`. Without `--policy` a built-in policy is used
+(block injection; redact secrets and personal data). Results carry the action, the redacted text and finding
+metadata (guard, rule, span, score); matched values are never echoed back. Like the rest of guardkit this runs
+fully offline. The injection detector is a baseline (see the measured results below), not a security boundary.
+
 ## Injection detection: measured results
 
 `InjectionGuard(mode="rules" | "model" | "both")` (default `both`: either fires).
